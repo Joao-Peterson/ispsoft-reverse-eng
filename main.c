@@ -13,8 +13,8 @@ int main(int argc, char **argv){
 
     if(argc < 3){ printf("Few arguments, needs 2, 'in' and 'out'.\n"); return 0; }
 
+    // mapp file to memory
     FMAP *file_in = fmap_win(argv[1], FMAP_MODE_READ);
-
     if(file_in == NULL){ printf("File map failed.\n"); return 0; }
     
     ISP_HEADER_t *header = (ISP_HEADER_t*)file_in->stream;
@@ -32,6 +32,7 @@ int main(int argc, char **argv){
         return 0;
     }
 
+    // buffer the compressed data
     uint8_t *deflated_stream = malloc(header->program_data_size);
     memcpy(deflated_stream, header->program_data_offset + file_in->stream, header->program_data_size);
 
@@ -85,15 +86,14 @@ uint8_t *inflate_stream(uint8_t *stream_data, size_t stream_data_size, size_t *s
     stream_compression.zfree = Z_NULL;
     stream_compression.opaque = Z_NULL;
 
-    code = inflateInit2(&stream_compression, -MAX_WBITS );
+    code = inflateInit2(&stream_compression, -MAX_WBITS); // - to avoid header detection
     if(code != Z_OK){ printf("InflateInit failed. Msg: %s\n", stream_compression.msg); return 0; }
 
-    // DEBUG
-    stream_data += 6;
+    stream_data += 6; // jump over the header and ID bytes and start directly at the deflated data. The ID bytes have been causing trouble
     stream_data_size -= 6;
     size_t remaining_data = stream_data_size; 
 
-    do{
+    do{ // loop until all deflated data is read
 
         if(remaining_data >= COMPRESSED_DATA_CHUNK){
             memcpy(buffer_in, stream_data + (stream_data_size - remaining_data), COMPRESSED_DATA_CHUNK);
@@ -117,7 +117,7 @@ uint8_t *inflate_stream(uint8_t *stream_data, size_t stream_data_size, size_t *s
 
         stream_compression.next_in = buffer_in;
 
-        do{
+        do{ // loop until "n" "COMPRESSED_DATA_CHUNK's" have been inflated from a single "COMPRESSED_DATA_CHUNK" input
             stream_compression.avail_out = COMPRESSED_DATA_CHUNK;
             stream_compression.next_out = buffer_out;
             
