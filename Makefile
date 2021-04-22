@@ -1,22 +1,45 @@
-CC = gcc
-C_ARGS = -g
+# ---------------------------------------------------------------
+# https://www.rapidtables.com/code/linux/gcc/gcc-l.html <- how to link libs
 
-build : main.exe clear_objs
+CC := gcc
 
-main.exe : main.o modules/fmap_win/fmap_win.o
-	${CC} $^ -L./ C:/msys64/mingw64/lib/libz.a -o $@
+C_FLAGS :=
 
-main.o : main.c inc/ispsoft_file_def.h
-	${CC} ${C_ARGS} -c $< -o $@
+I_FLAGS :=
+I_FLAGS += -I./inc
 
-modules/fmap_win/fmap_win.o : modules/fmap_win/fmap_win.c modules/fmap_win/fmap_win.h 
-	${CC} ${C_ARGS} -c $< -o $@
+L_FLAGS :=
+L_FLAGS += -L./lib
+L_FLAGS += ./lib/libdoc.a
+L_FLAGS += -lz
+
+SOURCES := main.c ./modules/fmap_win/fmap_win.c
+MAIN_APP := main.exe
+BUILD_DIR := build/
+
+# ---------------------------------------------------------------
+
+OBJS := $(SOURCES:.c=.o)
+
+OBJS_BUILD := $(addprefix $(BUILD_DIR), $(notdir $(SOURCES:.c=.o)))
+
+# ---------------------------------------------------------------
+
+.PHONY : build
+
+build : C_FLAGS += -g
+build : $(MAIN_APP)
+
+release : C_FLAGS += -O3
+release : $(MAIN_APP)
+
+$(MAIN_APP) : $(OBJS) $(RES_OUT)
+	$(CC) $(OBJS_BUILD) $(RES_OUT) $(L_FLAGS) -o $@
+
+%.o : %.c
+	$(CC) $(C_FLAGS) $(I_FLAGS) -c $< -o $(addprefix $(BUILD_DIR), $(notdir $@))
 
 clear : 
-	@rm -f main.exe
-	@rm -f main.o
-	@rm -f modules/fmap_win/fmap_win.o
-
-clear_objs : 
-	@rm -f main.o
-	@rm -f modules/fmap_win/fmap_win.o
+	@rm $(MAIN_APP)
+	@rm -f $(OBJS_BUILD)
+	@rm -f $(RES_OUT)

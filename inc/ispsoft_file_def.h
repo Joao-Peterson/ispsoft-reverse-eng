@@ -77,7 +77,7 @@ typedef struct{
     uint8_t     check_value3; // always 1 (non critical)
     uint8_t     pad5[38];
     uint16_t    check_value2; // always 0 (critical)
-    uint8_t     pad6[12];
+    uint8_t     pad6[12]; // from 12 to 13, CHECK LATER!!!!!!!!!!!!!!!!!!!!!
     uint32_t    program_data_size;
     uint32_t    program_data_offset;
     uint32_t    compiled_data_size;
