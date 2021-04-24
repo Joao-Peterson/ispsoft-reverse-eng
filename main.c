@@ -4,12 +4,36 @@
 #include <zlib.h>
 #include "inc/ispsoft_file_def.h"
 #include "inc/isp.h"
-#include "c_doc/doc.h"
-#include "c_doc/parse_utils.h"
+#include "doc.h"
+#include "parse_utils.h"
+#include "inc/pnet.h"
 
 int main(int argc, char **argv){
 
+    pnet_t *pnet = pnet_new(5, 4,
+         "p1", "p2", "p3", "p4", "p5",
+         0, 0, 1, 0, 1,
+         "t1", "t2", "t3", "t4",
+         -1,  0,  0,  0,
+          1, -1,  0,  1,
+          0,  1, -1,  0,
+          0,  0,  1, -1,
+          0,  0, -1,  0
+    ); 
+
+    pnet_print(pnet);
+
+    matrix_int_t *trigger = matrix_new(
+        pnet->transitions->x, 1, 
+        0, 0, 1, 0
+    );
     
+    pnet_fire(pnet, trigger);
+    pnet_sense(pnet);
+
+    pnet_print(pnet);
+
+    pnet_delete(pnet);
 
     // if(argc < 3){ printf("Few arguments, needs 2, 'in' and 'out'.\n"); return 0; }
 
