@@ -11,21 +11,36 @@
 int main(int argc, char **argv){
 
     pnet_t *pnet = pnet_new(5, 4,
-         "p1", "p2", "p3", "p4", "p5",
-         0, 0, 1, 0, 1,
-         "t1", "t2", "t3", "t4",
-         -1,  0,  0,  0,
-          1, -1,  0,  1,
-          0,  1, -1,  0,
-          0,  0,  1, -1,
-          0,  0, -1,  0
+        places_pnet,
+        "p1", "p2", "p3", "p4", "p5",
+        places_init_pnet,
+        1, 0, 0, 0, 1,
+        transitions_pnet,
+        "t1", "t2", "t3", "t4",
+        arcs_pnet,
+        -1,  0,  0,  0,
+         1, -1,  0,  1,
+         0,  1, -1,  0,
+         0,  0,  1, -1,
+         0,  0, -1,  0,
+        inhibit_arcs_pnet,
+         0,  0,  0,  0,
+         0,  0,  0,  0,
+         0,  0,  0,  0,
+         0,  0,  0,  0,
+         1,  0,  0,  0
     ); 
+
+    if(pnet == NULL){
+        printf("[%s.%i] [DEBUG] [pnet new failed!] \n", __FILE__, __LINE__);
+        return 0;
+    }
 
     pnet_print(pnet);
 
     matrix_int_t *trigger = matrix_new(
         pnet->transitions->x, 1, 
-        0, 0, 1, 0
+        1, 0, 0, 0
     );
     
     pnet_fire(pnet, trigger);

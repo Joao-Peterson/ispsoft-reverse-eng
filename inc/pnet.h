@@ -4,11 +4,29 @@
 #include "matrix.h"
 #include <stdarg.h>
 
+typedef enum{
+    places_pnet,
+    places_init_pnet,
+    transitions_pnet,
+    arcs_pnet,
+    inhibit_arcs_pnet
+}pnet_options_t;
+
+#define IS_PNET_OPTION(option) \
+( \
+    (option == places_pnet) || \
+    (option == places_init_pnet) || \
+    (option == transitions_pnet) || \
+    (option == arcs_pnet) || \
+    (option == inhibit_arcs_pnet) \
+)
+
 typedef struct{
     matrix_string_t *places;
     matrix_string_t *transitions;
     matrix_int_t *init_state;
     matrix_int_t *arcs;
+    matrix_int_t *arcs_inhibit;
 
     matrix_int_t *w_minus;
     matrix_int_t *state;
@@ -45,18 +63,32 @@ void pnet_print(pnet_t *pnet){
 }
 
 void pnet_sense(pnet_t *pnet){
-    matrix_int_t *sense_m = matrix_duplicate(pnet->w_minus);
-    
+    matrix_int_t *sense_m   = matrix_duplicate(pnet->w_minus);
+    matrix_int_t *inhibit_m = matrix_duplicate(pnet->arcs_inhibit);
+
     for(size_t j = 0; j < pnet->arcs->x; j++){
-        pnet->sensitive_transitions->m[0][j] = 1;
+        pnet->sensitive_transitions->m[0][j] = 1;                                   // set transition to sensibilized by default
         for(size_t i = 0; i < pnet->arcs->y; i++){
-            sense_m->m[i][j] += pnet->state->m[0][i];
-            if(sense_m->m[i][j] != 0)
-                pnet->sensitive_transitions->m[0][j] = 0;
+            /**
+             * by adding the exiting token to the required tokens, w_minus, we can compare to see
+             * if the transition is firable, that is, after the sum, the transition column should
+             * be zero or bigger, indicating that there are enought or more tokens to satisfy the
+             * subtraction.
+             * for inhibit arcs, by subtracting the number of required token by the existing ones
+             * the result should be 0 or negative, thus if bigger than zero, there are not enought
+             * tokens.  
+             */
+
+            sense_m->m[i][j]    += pnet->state->m[0][i];                            // sum tokens with required tokens, should be zero
+            inhibit_m->m[i][j]  -= pnet->state->m[0][i];                            // sub tokens with requires inhibit tokens, hould also be zero
+
+            if(sense_m->m[i][j] < 0 || inhibit_m->m[i][j] > 0)                      // if any missing sub token or missing inhibit token 
+                pnet->sensitive_transitions->m[0][j] = 0;                           // desensibilize
         }
     }
 
     matrix_delete(sense_m);
+    matrix_delete(inhibit_m);
 }
 
 void pnet_fire(pnet_t *pnet, matrix_int_t *transitions_to_fire){
@@ -89,10 +121,44 @@ pnet_t *pnet_new(size_t places_num, size_t transitions_num, ...){
     
     pnet_t *pnet = (pnet_t*)calloc(1, sizeof(pnet_t)); 
 
-    pnet->places                = v_matrix_string_new(places_num, 1, &args);
-    pnet->init_state            = v_matrix_new(places_num, 1, &args);
-    pnet->transitions           = v_matrix_string_new(transitions_num, 1, &args);
-    pnet->arcs                  = v_matrix_new(transitions_num, places_num, &args);
+    for(pnet_options_t options = va_arg(args, pnet_options_t); IS_PNET_OPTION(options); options = va_arg(args, pnet_options_t)){
+        switch(options){
+            case places_pnet:
+                pnet->places                = v_matrix_string_new(places_num, 1, &args);
+            break;
+
+            case places_init_pnet:
+                pnet->init_state            = v_matrix_new(places_num, 1, &args);
+            break;
+
+            case transitions_pnet:
+                pnet->transitions           = v_matrix_string_new(transitions_num, 1, &args);
+            break;
+            
+            case arcs_pnet:
+                pnet->arcs                  = v_matrix_new(transitions_num, places_num, &args);
+            break;
+            
+            case inhibit_arcs_pnet:           
+                pnet->arcs_inhibit          = v_matrix_new(transitions_num, places_num, &args);
+            break;
+
+            default:
+                return NULL;
+            break;
+        }
+    }
+
+    if(
+        pnet->places == NULL ||
+        pnet->init_state == NULL ||
+        pnet->transitions == NULL ||
+        pnet->arcs_inhibit == NULL ||
+        pnet->arcs == NULL
+    ){
+        va_end(args);
+        return NULL;
+    }
 
     pnet->w_minus               = matrix_duplicate(pnet->arcs);
     pnet_w_minus_new(pnet);

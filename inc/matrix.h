@@ -151,6 +151,22 @@ matrix_int_t *matrix_mul(matrix_int_t *a, matrix_int_t *b){
     return m;
 }
 
+matrix_int_t *matrix_mul_scalar(matrix_int_t *a, int c){
+    matrix_int_t *m = (matrix_int_t*)calloc(1, sizeof(matrix_int_t));
+    m->x = a->x;
+    m->y = a->y;
+    m->m = (int**)calloc(m->y, sizeof(int*));
+
+    for(size_t i = 0; i < m->y; i++){
+        m->m[i] = (int*)calloc(m->x, sizeof(int));
+        for(size_t j = 0; j < m->x; j++){
+            m->m[i][j] = m->m[i][j] * c; 
+        }
+    }
+
+    return m;
+}
+
 matrix_int_t *matrix_add(matrix_int_t *a, matrix_int_t *b){
     if(a->x != b->x || a->y != b->y) return NULL;
 
