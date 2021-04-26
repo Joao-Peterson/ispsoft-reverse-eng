@@ -21,6 +21,8 @@ typedef struct{
 
 
 matrix_string_t *v_matrix_string_new(size_t x, size_t y, va_list *args){
+    if(x == 0 || y == 0) return NULL;
+    
     matrix_string_t *matrix = (matrix_string_t*)calloc(1, sizeof(matrix_string_t));
     matrix->x = x;
     matrix->y = y;
@@ -108,6 +110,8 @@ matrix_int_t *matrix_new_zero(size_t x, size_t y){
 }
 
 void matrix_delete(matrix_int_t *matrix){
+    if(matrix == NULL) return;
+    
     for(size_t i = 0; i < matrix->y; i++)
         free(matrix->m[i]);
 

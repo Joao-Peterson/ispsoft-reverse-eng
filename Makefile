@@ -12,6 +12,7 @@ I_FLAGS += -I./lib/c_doc
 L_FLAGS :=
 L_FLAGS += -L./lib
 L_FLAGS += ./lib/c_doc/libdoc.a
+L_FLAGS += -lpthread
 L_FLAGS += -lz
 
 SOURCES := main.c 
