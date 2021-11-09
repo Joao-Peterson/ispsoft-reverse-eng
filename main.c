@@ -94,10 +94,10 @@ int main(int argc, char **argv){
 
     // if(argc < 3){ printf("Few arguments, needs 2, 'in' and 'out'.\n"); return 0; }
 
-    // char *file = fstream(argv[1]);
+    char *file = fstream(argv[1]);
     // if(file == NULL){ printf("Fiel open failed.\n"); return 0; }
     
-    // ISP_HEADER_t *header = (ISP_HEADER_t*)file;
+    ISP_HEADER_t *header = (ISP_HEADER_t*)file;
 
     // if(header->file_identification != 0x00 || header->check_value2 != 0x0000 || header->program_data_offset > 0xFFFF){
     //     printf("Input file is not a ISPsoft file.\n");
@@ -117,15 +117,15 @@ int main(int argc, char **argv){
     // memcpy(deflated_stream, header->program_data_offset + file, header->program_data_size);
 
     // // DEBUG
-    // // printf("[version_ispsoft:     0x%04X]\n",header->version_ispsoft);
-    // // printf("[plc_type:            0x%04X]\n",header->plc_type);
-    // // printf("[footer_offset:       0x%04X]\n",header->footer_offset);
-    // // printf("[footer_size:         0x%04X]\n",header->footer_size);
-    // // printf("[file_identification: 0x%04X]\n",header->file_identification);
-    // // printf("[check_value2:        0x%04X]\n",header->check_value2);
-    // // printf("[program_data_offset: 0x%04X]\n",header->program_data_offset);
-    // // printf("[program_data_size:   0x%04X]\n",header->program_data_size);
-    // // printf("[0x%02X]...[0x%02X][0x%02X][0x%02X][0x%02X]\n",deflated_stream[0],deflated_stream[header->program_data_size-4],deflated_stream[header->program_data_size-3],deflated_stream[header->program_data_size-2],deflated_stream[header->program_data_size-1]);
+    // printf("[version_ispsoft:     0x%04X]\n",header->version_ispsoft);
+    // printf("[plc_type:            0x%04X]\n",header->plc_type);
+    // printf("[footer_offset:       0x%04X]\n",header->footer_offset);
+    // printf("[footer_size:         0x%04X]\n",header->footer_size);
+    // printf("[file_identification: 0x%04X]\n",header->file_identification);
+    // printf("[check_value2:        0x%04X]\n",header->check_value2);
+    // printf("[program_data_offset: 0x%04X]\n",header->program_data_offset);
+    // printf("[program_data_size:   0x%04X]\n",header->program_data_size);
+    // printf("[0x%02X]...[0x%02X][0x%02X][0x%02X][0x%02X]\n",deflated_stream[0],deflated_stream[header->program_data_size-4],deflated_stream[header->program_data_size-3],deflated_stream[header->program_data_size-2],deflated_stream[header->program_data_size-1]);
 
     // size_t inflated_stream_size = 0;
     // uint8_t *inflated_stream = inflate_stream(deflated_stream, header->program_data_size, &inflated_stream_size); 
